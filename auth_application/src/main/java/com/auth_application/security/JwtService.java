@@ -119,11 +119,11 @@ public class JwtService {
         return "refresh".equals(type);
     }
 
-    //check expiration
-    public boolean isExpired(String  token) {
-        Date expiration = getClaims(token)
-                .getExpiration();
-        return expiration.before(new Date());
-    }
+//    //check expiration
+//    public boolean isExpired(String  token) {
+//        Date expiration = getClaims(token)
+//                .getExpiration();
+//        return expiration.before(new Date());
+//    }
 }
 
