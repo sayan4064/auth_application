@@ -21,4 +21,19 @@ public class AuthServiceImpl implements AuthService {
         return userService.createUser(userDto);
     }
 
+    @Override
+    public Object loginUser(UserDto userDto) {
+        return null;
+    }
+
+    @Override
+    public Object refreshToken(String refreshToken) {
+        return null;
+    }
+
+    @Override
+    public void logout(String refreshToken) {
+
+    }
+
 }
