@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST,"api/v1/auth/login").permitAll()
                         .anyRequest().authenticated()
-        ) 
+                         )
                 .exceptionHandling(ex->
                         ex.authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(401);
