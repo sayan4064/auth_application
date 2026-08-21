@@ -33,18 +33,20 @@ public class SecurityConfig {
     public SecurityFilterChain  securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(session->
-                        session.sessionCreationPolicy(SessionCreationPolicy.))
-                .authorizeHttpRequests( auth -> auth
-                .requestMatchers(HttpMethod.POST,"/api/v1/auth/register").permitAll()
-                .requestMatchers(HttpMethod.POST,"api/v1/auth/login").permitAll()
-                .anyRequest().authenticated()
-        )       .exceptionHandling(ex->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests( auth ->
+                        auth
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST,"api/v1/auth/login").permitAll()
+                        .anyRequest().authenticated()
+        ) 
+                .exceptionHandling(ex->
                         ex.authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(401);
                             response.setContentType("application/json");
                             Map<String , String > error = new HashMap<>();
                             error.put("error","Unauthorized access");
-                            error.put("error",authException.getMessage());
+                            error.put("message",authException.getMessage());
                             response.getWriter().write(new ObjectMapper().writeValueAsString(error));
                         }))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
