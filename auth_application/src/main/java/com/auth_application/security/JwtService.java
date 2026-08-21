@@ -1,21 +1,24 @@
 package com.auth_application.security;
 
 
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.auth_application.entity.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @Getter
@@ -123,9 +126,14 @@ public class JwtService {
 
     //check expiration
     public boolean isExpired(String  token) {
-        Date expiration = getClaims(token)
-                .getExpiration();
-        return expiration.before(new Date());
+       try {
+            Date expiration = getClaims(token).getExpiration();
+            return expiration.before(new Date());
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

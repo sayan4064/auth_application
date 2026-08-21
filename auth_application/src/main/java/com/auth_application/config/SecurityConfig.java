@@ -33,7 +33,7 @@ public class SecurityConfig {
     public SecurityFilterChain  securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(session->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(SessionCreationPolicy.))
                 .authorizeHttpRequests( auth -> auth
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST,"api/v1/auth/login").permitAll()
