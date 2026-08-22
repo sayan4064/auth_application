@@ -135,7 +135,7 @@ refreshTokenRepository.save(refreshToken);
         refreshTokenRepository.save(storedRefreshToken);
 
         //create new refreshtoken
-        RefreshToken newRefreshToken = RefreshToken.builder().jti(newJti).user(user).createdAt(Instant.now()).expiresAt(Instant.now().plusSeconds(jwt)).build();
+        RefreshToken newRefreshToken = RefreshToken.builder().jti(newJti).user(user).createdAt(Instant.now()).expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTokenTtlSeconds())).revoked(false).build();
         return null;
     }
 
