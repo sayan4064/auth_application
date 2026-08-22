@@ -25,7 +25,7 @@ spring:
 
     show-sql: true
 
-  security:
+security:
     jwt:
       secret: ${JWT_SECRET:saiofal_vkasfbehwq_must_be_at_least_64_characters_long_for_hs512_signatures_to_work_properly_12345}
       issuer: ${JWT_ISSUER:api.substring.com}
