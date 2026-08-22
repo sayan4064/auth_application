@@ -5,7 +5,6 @@ import com.auth_application.entity.RefreshToken;
 import com.auth_application.entity.User;
 import com.auth_application.repository.RefreshTokenRepository;
 import com.auth_application.repository.UserRepo;
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,68 +20,161 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
+public class OAuth2SuccessHandler
+        implements AuthenticationSuccessHandler {
 
     private final UserRepo userRepo;
-  private final RefreshTokenRepository refreshTokenRepository;
-  private final CookieService cookieService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final CookieService cookieService;
     private final JwtService jwtService;
+
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
             HttpServletResponse response,
             Authentication authentication
     ) throws IOException, ServletException {
-        //google user information
-        OAuth2User  oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email=oAuth2User.getAttribute("email");
-        String name=oAuth2User.getAttribute("name");
-        String image=oAuth2User.getAttribute("picture");
 
-        User user=userRepo
+
+        // =====================================================
+        // 1. Get Google User Information
+        // =====================================================
+
+        OAuth2User oAuth2User =
+                (OAuth2User) authentication.getPrincipal();
+
+        String email =
+                oAuth2User.getAttribute("email");
+
+        String name =
+                oAuth2User.getAttribute("name");
+
+        String image =
+                oAuth2User.getAttribute("picture");
+
+
+        // =====================================================
+        // 2. Find Existing User
+        //    OR Create New Google User
+        // =====================================================
+
+        User user = userRepo
                 .findByEmail(email)
-                .orElseGet(() ->{ User newUser=User
-                        .builder()
-                        .email(email)
-                        .name(name)
-                        .image(image)
-                        .provider(Provider.GOOGLE)
-                        .build();
-                return userRepo.save(newUser);
+                .orElseGet(() -> {
+
+                    User newUser = User
+                            .builder()
+                            .email(email)
+                            .name(name)
+                            .image(image)
+                            .provider(Provider.GOOGLE)
+                            .enable(true)
+                            .build();
+
+                    return userRepo.save(newUser);
                 });
-        //generate your jwt acccess token
-        String accessToken = jwtService.generateAccessToken(user);
 
-        //generate jti
-        String jti= UUID.randomUUID().toString();
-        //generate refresh token jjwt
-        String refreshTokenJwt=jwtService.generateRefreshToken(user,jti);
 
-        //save refresh token in datebase
-        RefreshToken refreshToken=RefreshToken.builder()
-                .jti(jti)
-                .user(user)
-                .createdAt(Instant.now())
-                .expiresAt(Instant.now()
-                        .plusSeconds(jwtService
-                                .getRefreshTokenTtlSeconds()))
-                .revoked(false)
-                .build();
+        // =====================================================
+        // 3. Generate Access Token
+        // =====================================================
+
+        String accessToken =
+                jwtService.generateAccessToken(user);
+
+
+        // =====================================================
+        // 4. Generate Refresh Token JTI
+        // =====================================================
+
+        String jti =
+                UUID.randomUUID().toString();
+
+
+        // =====================================================
+        // 5. Generate Refresh Token JWT
+        // =====================================================
+
+        String refreshTokenJwt =
+                jwtService.generateRefreshToken(
+                        user,
+                        jti
+                );
+
+
+        // =====================================================
+        // 6. Save Refresh Token in Database
+        // =====================================================
+
+        Instant now = Instant.now();
+
+        RefreshToken refreshToken =
+                RefreshToken
+                        .builder()
+                        .jti(jti)
+                        .user(user)
+                        .createdAt(now)
+                        .expiresAt(
+                                now.plusSeconds(
+                                        jwtService
+                                                .getRefreshTokenTtlSeconds()
+                                )
+                        )
+                        .revoked(false)
+                        .build();
+
         refreshTokenRepository.save(refreshToken);
-        cookieService.attachRefreshCookie(response,refreshTokenJwt, jwtService.getRefreshTokenTtlSeconds());
+
+
+        // =====================================================
+        // 7. Put Refresh Token in HttpOnly Cookie
+        // =====================================================
+
+        cookieService.attachRefreshCookie(
+                response,
+                refreshTokenJwt,
+                jwtService.getRefreshTokenTtlSeconds()
+        );
+
+
+        // =====================================================
+        // 8. Add Security Headers
+        // =====================================================
+
         cookieService.addNoStoreHeaders(response);
 
-        //temporary testing response
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        response.getWriter().write("""
-                {
-                                  "message": "Google login successful",
-                                    "accessToken": "%s",
-                                    "refreshToken": "%s"
-                                }
-                """ .formatted(accessToken,refreshToken));
-    }
 
+        // =====================================================
+        // 9. Temporary Testing Response
+        // =====================================================
+
+        response.setStatus(
+                HttpServletResponse.SC_OK
+        );
+
+        response.setContentType(
+                "application/json"
+        );
+
+        response.setCharacterEncoding(
+                "UTF-8"
+        );
+
+
+        response.getWriter().write(
+                """
+                {
+                    "message": "Google login successful",
+                    "accessToken": "%s",
+                    "refreshToken": "%s"
+                }
+                """.formatted(
+                        accessToken,
+                        refreshTokenJwt
+                )
+        );
+
+        response.getWriter().flush();
+    }
 }
