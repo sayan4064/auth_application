@@ -31,58 +31,136 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserRepo userRepo;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
-        String authheader =request.getHeader("Authorization");
-        if(authheader==null||!authheader.startsWith("Bearer ")){
-            filterChain.doFilter(request,response);
+
+        // 1. Get Authorization header
+        String authHeader = request.getHeader("Authorization");
+
+        // 2. No Bearer token
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
+
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String token=authheader.substring(7);
-        
-        try{
-            Jws<Claims> parsedToken = jwtService.parseToken(token);
-            Claims payloed = parsedToken.getPayload();
-            if(!jwtService.isAccessToken(token)){
-                filterChain.doFilter(request,response);
+        // 3. Extract token
+        String token = authHeader.substring(7);
+
+        try {
+
+            // 4. Parse token ONCE
+            Jws<Claims> parsedToken =
+                    jwtService.parseToken(token);
+
+            Claims payload =
+                    parsedToken.getPayload();
+
+            // 5. Check token type
+            String tokenType =
+                    payload.get("type", String.class);
+
+            if (!"access".equals(tokenType)) {
+
+                filterChain.doFilter(request, response);
                 return;
-
             }
-            String subject = payloed.getSubject();
-            UUID userId=UUID.fromString(subject);
 
-            userRepo.findById(userId).ifPresent(user->{
-                if(!user.isEnabled()){
-                    return;
-                }
+            // 6. Get user ID from subject
+            String subject =
+                    payload.getSubject();
 
-                List<GrantedAuthority> authorities =
-                        user.getRoles() == null
-                                ? List.of()
-                                : user.getRoles()
-                                  .stream()
-                                  .map(role ->
-                                       new SimpleGrantedAuthority(
-                                               role.getName()
-                                       )
-                                  )
-                                  .collect(Collectors.toList());
-                UsernamePasswordAuthenticationToken authentication=new UsernamePasswordAuthenticationToken(user.getEmail(),null,authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                if(SecurityContextHolder.getContext().getAuthentication()==null){
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
-            });
+            UUID userId =
+                    UUID.fromString(subject);
+
+            System.out.println("JWT User ID = " + userId);
+            System.out.println("JWT Email = "
+                    + payload.get("email", String.class));
+
+            // 7. Find user
+            userRepo.findById(userId)
+                    .ifPresentOrElse(user -> {
+
+                        System.out.println(
+                                "USER FOUND = " + user.getEmail()
+                        );
+
+                        // User disabled
+                        if (!user.isEnabled()) {
+                            return;
+                        }
+
+                        // 8. Authorities
+                        List<GrantedAuthority> authorities =
+                                user.getRoles() == null
+                                        ? List.of()
+                                        : user.getRoles()
+                                          .stream()
+                                          .map(role ->
+                                               new SimpleGrantedAuthority(
+                                                       role.getName()
+                                               )
+                                          )
+                                          .collect(Collectors.toList());
+
+                        // 9. Create Authentication
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        user.getEmail(),
+                                        null,
+                                        authorities
+                                );
+
+                        authentication.setDetails(
+                                new WebAuthenticationDetailsSource()
+                                        .buildDetails(request)
+                        );
+
+                        // 10. Set SecurityContext
+                        if (SecurityContextHolder
+                                .getContext()
+                                .getAuthentication() == null) {
+
+                            SecurityContextHolder
+                                    .getContext()
+                                    .setAuthentication(
+                                            authentication
+                                    );
+                        }
+
+                    }, () -> {
+
+                        System.out.println(
+                                "USER NOT FOUND = " + userId
+                        );
+                    });
+
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            logger.warn("JWT token has expired: " + e.getMessage());
-        } catch (io.jsonwebtoken.MalformedJwtException | io.jsonwebtoken.security.SignatureException e) {
-            logger.warn("Invalid JWT token signature/format: " + e.getMessage());
+
+            logger.warn("JWT expired: " + e.getMessage());
+
+        } catch (
+                io.jsonwebtoken.MalformedJwtException |
+                io.jsonwebtoken.security.SignatureException e
+        ) {
+
+            logger.warn(
+                    "Invalid JWT: " + e.getMessage()
+            );
+
         } catch (Exception e) {
-            logger.error("Authentication process error", e);
+
+            logger.error(
+                    "JWT authentication error",
+                    e
+            );
         }
-        filterChain.doFilter(request,response);
+
+        // 11. Continue
+        filterChain.doFilter(request, response);
     }
 }
