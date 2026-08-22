@@ -17,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -183,7 +184,32 @@ refreshTokenRepository.save(refreshToken);
     }
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response) {
+     try{
+         //read refresh token
+         String refreshToken = readRefreshTokenFromRequest(null,request);
 
+         //check refresh token
+         if(jwtService.isRefreshToken(refreshToken)) {
+             //get jti
+             String jti=jwtService.getJti(refreshToken);
+             //find token
+             refreshTokenRepository.findByJti(jti).ifPresent(token->{
+                 //revoke token
+                 token.setRevoked(true);
+                 //save
+                 refreshTokenRepository.save(token);
+             });
+         }
+     }catch(Exception e){
+
+     }
+     //clear cookie
+        cookieService.clearRefreshCookie(response);
+     //no cache
+        cookieService.addNoStoreHeaders(response);
+
+        //clear security context
+        SecurityContextHolder.clearContext();
     }
 
 
