@@ -1,5 +1,7 @@
 package com.auth_application.dtos;
 
-public class RefreshTokenRequest {
-    String refreshToken;
+import lombok.*;
+
+public record RefreshTokenRequest(String refreshToken) {
+
 }
