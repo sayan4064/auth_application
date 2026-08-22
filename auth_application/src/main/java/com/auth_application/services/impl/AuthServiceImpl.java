@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.UUID;
 
 @Service
@@ -89,7 +90,7 @@ refreshTokenRepository.save(refreshToken);
         String refreshToken = readRefreshTokenFromRequest(body, request);
 
         //chech token type
-        if(!jwtService.isRefreshToken(refreshToken)){
+        if (!jwtService.isRefreshToken(refreshToken)) {
             throw new BadCredentialsException("Invalid refresh token type");
         }
 
@@ -97,36 +98,36 @@ refreshTokenRepository.save(refreshToken);
         String jti = jwtService.getJti(refreshToken);
 
         //get user id
-        UUID userId= jwtService.getUserId(refreshToken);
+        UUID userId = jwtService.getUserId(refreshToken);
 
         //find stored token
-        RefreshToken storedRefreshToken=refreshTokenRepository
+        RefreshToken storedRefreshToken = refreshTokenRepository
                 .findByJti(jti)
                 .orElseThrow(() -> new BadCredentialsException("Refresh token not found"));
 
         //check revoked
-        if(storedRefreshToken.isRevoked()){
+        if (storedRefreshToken.isRevoked()) {
             throw new BadCredentialsException("Refresh token is revoked");
         }
 
         //check expiration
-        if(storedRefreshToken.getExpiresAt().isBefore(Instant.now())){
+        if (storedRefreshToken.getExpiresAt().isBefore(Instant.now())) {
             throw new BadCredentialsException("Refresh token is expired");
         }
 
         //check userId
-        if(!storedRefreshToken.getUser().getId().equals(userId)){
+        if (!storedRefreshToken.getUser().getId().equals(userId)) {
             throw new BadCredentialsException("Invalid user id");
         }
 
         //get user
-        User user=storedRefreshToken.getUser();
+        User user = storedRefreshToken.getUser();
 
         //revoke old refresh token
         storedRefreshToken.setRevoked(true);
 
         //generate new jti
-        String newJti=UUID.randomUUID().toString();
+        String newJti = UUID.randomUUID().toString();
 
         //set replacement JTI
         storedRefreshToken.setReplacedByToken(newJti);
@@ -135,10 +136,51 @@ refreshTokenRepository.save(refreshToken);
         refreshTokenRepository.save(storedRefreshToken);
 
         //create new refreshtoken
-        RefreshToken newRefreshToken = RefreshToken.builder().jti(newJti).user(user).createdAt(Instant.now()).expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTokenTtlSeconds())).revoked(false).build();
-        return null;
-    }
+        RefreshToken newRefreshToken = RefreshToken
+                .builder()
+                .jti(newJti)
+                .user(user)
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now()
+                        .plusSeconds(jwtService.getRefreshTokenTtlSeconds()))
+                .revoked(false)
+                .build();
 
+        refreshTokenRepository.save(newRefreshToken);
+        //generate new access token
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        //generate newRefreshToken
+        String newRefreshTokenJwt = jwtService.generateRefreshToken(user, newJti);
+
+        //update cache
+        cookieService.attachRefreshCookie(response, newRefreshTokenJwt, jwtService.getRefreshTokenTtlSeconds());
+
+        //no cache
+        cookieService.addNoStoreHeaders(response);
+
+        //return responcse
+        return new RefreshTokenResponse(newAccessToken, newRefreshTokenJwt);
+
+    }
+    //read refresh token
+    private String readRefreshTokenFromRequest(RefreshTokenRequest body, HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            var fromCookie = Arrays.stream(request.getCookies())
+                            .filter(cookie ->
+                                    cookie.getName().equals(cookieService.getRefreshTokenCookieName()))
+                            .map(cookie -> cookie.getValue())
+                            .filter(value -> value != null && !value.isBlank())
+                            .findFirst();
+            if (fromCookie.isPresent()) {
+                return fromCookie.get();
+            }
+        }
+        if (body != null && body.refreshToken() != null && !body.refreshToken().isBlank()) {
+            return body.refreshToken();
+        }
+        throw new BadCredentialsException("Refresh token is missing");
+    }
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response) {
 
