@@ -1,6 +1,7 @@
 package com.auth_application.config;
 
 import com.auth_application.security.JwtAuthFilter;
+import com.auth_application.security.OAuth2SuccessHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class SecurityConfig {
     }
 
     private final JwtAuthFilter  jwtAuthFilter;
+    private final OAuth2SuccessHandler oauth2SuccessHandler;
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
@@ -45,10 +47,14 @@ public class SecurityConfig {
                                         "/api/v1/auth/register",
                                         "/api/v1/auth/login",
                                         "/api/v1/auth/refresh",
-                                        "/api/v1/auth/logout"
+                                        "/api/v1/auth/logout",
+                                        "/oauth2/**",
+                                        "/login/**"
+
                                 ).permitAll()
                         .anyRequest().authenticated()
                          )
+                .oauth2Login(oauth->oauth.successHandler(oauth2SuccessHandler))
                 .exceptionHandling(ex->
                         ex.authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(401);
