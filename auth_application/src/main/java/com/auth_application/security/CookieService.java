@@ -56,17 +56,13 @@ public class CookieService {
                         .path("/")
                         .maxAge(Duration.ofSeconds(maxAgeSeconds))
                         .sameSite(cookieSameSite);
-
-
         // Domain optional
         if (StringUtils.hasText(cookieDomain)) {
             builder.domain(cookieDomain);
         }
-
         ResponseCookie cookie = builder.build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
-
     // clear refresh token cookie
     public void clearRefreshCookie(HttpServletResponse response) {
         ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(refreshTokenCookieName, "")
@@ -75,7 +71,6 @@ public class CookieService {
                         .path("/")
                         .maxAge(Duration.ZERO)
                         .sameSite(cookieSameSite);
-
         // Domain optional
         if (StringUtils.hasText(cookieDomain)) {
             builder.domain(cookieDomain);
@@ -83,7 +78,6 @@ public class CookieService {
         ResponseCookie cookie = builder.build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
-
     // no cache header
     public void addNoStoreHeaders(HttpServletResponse response) {
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");

@@ -21,6 +21,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 
 @Service
+
 @Getter
 public class JwtService {
 
