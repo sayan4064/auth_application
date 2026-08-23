@@ -43,7 +43,7 @@ spring:
 
 security:
     jwt:
-      secret: ${JWT_SECRET:saiofal_vkasfbehwq_must_be_at_least_64_characters_long_for_hs512_signatures_to_work_properly_12345}
+      secret: ${JWT_SECRET}
       issuer: ${JWT_ISSUER:api.substring.com}
 
       access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:180}
