@@ -120,6 +120,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write("""
                 {
+                
                     "message": "login successful"
                     "provider": "%s",
                     "accessToken": "%s",
