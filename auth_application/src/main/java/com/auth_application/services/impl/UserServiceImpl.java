@@ -2,9 +2,12 @@ package com.auth_application.services.impl;
 
 import com.auth_application.dtos.UserDto;
 import com.auth_application.entity.Provider;
+import com.auth_application.entity.Role;
 import com.auth_application.entity.User;
 import com.auth_application.exception.ResoureceNotFoundException;
 import com.auth_application.helper.UserHelper;
+import com.auth_application.repository.RefreshTokenRepository;
+import com.auth_application.repository.RoleRepo;
 import com.auth_application.repository.UserRepo;
 import com.auth_application.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepo  userRepo;
     private final ModelMapper modelMapper;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RoleRepo  roleRepo;
     //create user
     @Override
     @Transactional
@@ -29,11 +34,23 @@ public class UserServiceImpl implements UserService {
              throw new IllegalArgumentException("User already exists");
          }
 
-         User user = modelMapper.map(userDto, User.class);
-         user.setProvider(userDto.getProvider()!=null ? userDto.getProvider() : Provider.LOCAL);
+         User user=new User();
+         user.setEmail(userDto.getEmail());
+         user.setName(userDto.getName());
+         user.setPassword(userDto.getPassword());
+         user.setImage(userDto.getImage());
+         user.setProvider(userDto.getProvider()!=null?userDto.getProvider():Provider.LOCAL);
+         user.setEnable(true);
 
-         User savedUser = userRepo.save(user);
-         return modelMapper.map(savedUser, UserDto.class);
+
+        Role userRole = roleRepo
+                .findByName("ROLE_USER")
+                .orElseGet(() -> {Role role = Role.builder().name("ROLE_USER").build();
+                    return roleRepo.save(role);
+                });
+        user.getRoles().add(userRole);
+        User savedUser = userRepo.save(user);
+        return modelMapper.map(savedUser, UserDto.class);
     }
 
     @Override
@@ -89,6 +106,7 @@ public class UserServiceImpl implements UserService {
     var uuid=UserHelper.parseUUID(userId);
         User user=userRepo.findById(uuid)
                 .orElseThrow(() -> new ResoureceNotFoundException("User not found"));
+        refreshTokenRepository.deleteByUser(user);
         userRepo.delete(user);
     } 
 

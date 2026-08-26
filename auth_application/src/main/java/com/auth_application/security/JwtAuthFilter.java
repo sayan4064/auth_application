@@ -76,7 +76,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 System.out.println("USER ENABLED : " + user.isEnabled());
                 // don't authenticate disabled user
                 if (!user.isEnabled()) {
-                    System.out.println("❌ USER DISABLED");
+                    System.out.println("USER DISABLED");
                     return;
                 }
                 // get roles of the user
@@ -97,21 +97,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 // save authentication in security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("✅ AUTHENTICATION SET");
+                System.out.println(" AUTHENTICATION SET");
                 // check authentication status
                 System.out.println("AUTHENTICATED : " + SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
             }, () -> {
                 // user id from token does not exist in database
-                System.out.println("❌ USER NOT FOUND : " + userId);});
+                System.out.println(" USER NOT FOUND : " + userId);});
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             // token is expired
-            System.out.println("❌ TOKEN EXPIRED");
+            System.out.println(" TOKEN EXPIRED");
         } catch (io.jsonwebtoken.MalformedJwtException | io.jsonwebtoken.security.SignatureException e) {
             // token is invalid or signature doesn't match
-            System.out.println("❌ INVALID JWT : " + e.getMessage());
+            System.out.println(" INVALID JWT : " + e.getMessage());
         } catch (Exception e) {
             // handle other jwt errors
-            System.out.println("❌ JWT ERROR : " + e.getMessage());
+            System.out.println(" JWT ERROR : " + e.getMessage());
             e.printStackTrace();
         }
         // check final authentication result

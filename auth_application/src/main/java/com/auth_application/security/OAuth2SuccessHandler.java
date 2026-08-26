@@ -1,9 +1,11 @@
 package com.auth_application.security;
 
+import com.auth_application.entity.Role;
 import com.auth_application.entity.Provider;
 import com.auth_application.entity.RefreshToken;
 import com.auth_application.entity.User;
 import com.auth_application.repository.RefreshTokenRepository;
+import com.auth_application.repository.RoleRepo;
 import com.auth_application.repository.UserRepo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +29,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieService cookieService;
     private final JwtService jwtService;
+    private final RoleRepo roleRepo;
+
 
 
     @Override
@@ -71,15 +75,30 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             throw new IllegalArgumentException("Invalid email address");
         }
         // find exixtiong user or create new user
-        User user = userRepo.findByEmail(email).orElseGet(() -> {
-                    User newUser = User
-                            .builder()
+        User user = userRepo.findByEmail(email)
+                .orElseGet(() -> {
+
+                    Role userRole = roleRepo
+                            .findByName("ROLE_USER")
+                            .orElseGet(() ->
+                                    roleRepo.save(
+                                            Role.builder()
+                                                    .name("ROLE_USER")
+                                                    .build()
+                                    )
+                            );
+
+                    User newUser = User.builder()
                             .email(email)
                             .name(name)
                             .image(image)
-                            .provider(Provider.GOOGLE)
+                            .provider(provider)
                             .enable(true)
                             .build();
+
+
+                    newUser.getRoles().add(userRole);
+
                     return userRepo.save(newUser);
                 });
         // generate access token
@@ -120,8 +139,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write("""
                 {
-                
-                    "message": "login successful"
+                    "message": "login successful",
                     "provider": "%s",
                     "accessToken": "%s",
                     "refreshToken": "%s"

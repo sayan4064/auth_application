@@ -25,22 +25,17 @@ import lombok.Getter;
 @Getter
 public class JwtService {
 
-    private final SecretKey secretKey;
-    private final long accessTokenTtlSeconds;
-    private final long refreshTokenTtlSeconds;
-    private final String issuer;
-
-
+        private final SecretKey secretKey;
+        private final long accessTokenTtlSeconds;
+         private final long refreshTokenTtlSeconds;
+         private final String issuer;
     public JwtService(
             @Value("${security.jwt.secret}")
             String secret,
-
             @Value("${security.jwt.access-ttl-seconds}")
             long accessTokenTtlSeconds,
-
             @Value("${security.jwt.refresh-ttl-seconds}")
             long refreshTokenTtlSeconds,
-
             @Value("${security.jwt.issuer}")
             String issuer
     ) {
