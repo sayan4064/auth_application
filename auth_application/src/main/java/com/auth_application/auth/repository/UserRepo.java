@@ -1,8 +1,7 @@
-package com.auth_application.repository;
+package com.auth_application.auth.repository;
 
-import com.auth_application.entity.User;
+import com.auth_application.auth.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

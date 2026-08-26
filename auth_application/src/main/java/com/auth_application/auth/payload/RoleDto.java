@@ -1,4 +1,4 @@
-package com.auth_application.dtos;
+package com.auth_application.auth.payload;
 
 
 import lombok.AllArgsConstructor;

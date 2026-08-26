@@ -1,7 +1,7 @@
-package com.auth_application.controller;
+package com.auth_application.auth.controller;
 
-import com.auth_application.dtos.UserDto;
-import com.auth_application.services.UserService;
+import com.auth_application.auth.payload.UserDto;
+import com.auth_application.auth.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

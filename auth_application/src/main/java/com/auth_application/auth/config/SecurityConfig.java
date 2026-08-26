@@ -1,7 +1,5 @@
-package com.auth_application.config;
+package com.auth_application.auth.config;
 
-import com.auth_application.security.JwtAuthFilter;
-import com.auth_application.security.OAuth2SuccessHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 

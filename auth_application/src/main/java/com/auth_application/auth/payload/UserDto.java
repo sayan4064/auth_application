@@ -1,6 +1,6 @@
-package com.auth_application.dtos;
+package com.auth_application.auth.payload;
 
-import com.auth_application.entity.Provider;
+import com.auth_application.auth.entity.Provider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

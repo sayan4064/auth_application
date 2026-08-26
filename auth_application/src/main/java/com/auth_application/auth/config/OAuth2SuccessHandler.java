@@ -1,12 +1,14 @@
-package com.auth_application.security;
+package com.auth_application.auth.config;
 
-import com.auth_application.entity.Role;
-import com.auth_application.entity.Provider;
-import com.auth_application.entity.RefreshToken;
-import com.auth_application.entity.User;
-import com.auth_application.repository.RefreshTokenRepository;
-import com.auth_application.repository.RoleRepo;
-import com.auth_application.repository.UserRepo;
+import com.auth_application.auth.entity.Role;
+import com.auth_application.auth.entity.Provider;
+import com.auth_application.auth.entity.RefreshToken;
+import com.auth_application.auth.entity.User;
+import com.auth_application.auth.repository.RefreshTokenRepository;
+import com.auth_application.auth.repository.RoleRepo;
+import com.auth_application.auth.repository.UserRepo;
+import com.auth_application.security.CookieService;
+import com.auth_application.security.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,8 +1,8 @@
-package com.auth_application.services;
+package com.auth_application.auth.services;
 
-import com.auth_application.dtos.RefreshTokenRequest;
-import com.auth_application.dtos.RefreshTokenResponse;
-import com.auth_application.dtos.UserDto;
+import com.auth_application.auth.payload.RefreshTokenRequest;
+import com.auth_application.auth.payload.RefreshTokenResponse;
+import com.auth_application.auth.payload.UserDto;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

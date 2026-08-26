@@ -1,6 +1,6 @@
 package com.auth_application.security;
 
-import com.auth_application.repository.UserRepo;
+import com.auth_application.auth.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

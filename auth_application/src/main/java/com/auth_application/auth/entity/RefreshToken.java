@@ -1,4 +1,4 @@
-package com.auth_application.entity;
+package com.auth_application.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,11 +17,9 @@ import java.util.UUID;
                    @Index(name = "refresh_token_user_index", columnList = "user_id")})
 
 public class RefreshToken {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     @Column(name = "jti", nullable = false, unique = true, updatable = false)
     private String jti;
 

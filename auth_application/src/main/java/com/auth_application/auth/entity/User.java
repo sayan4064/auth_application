@@ -1,4 +1,4 @@
-package com.auth_application.entity;
+package com.auth_application.auth.entity;
 
 
 import jakarta.persistence.*;
@@ -6,12 +6,10 @@ import jakarta.persistence.*;
 
 import lombok.*;
 
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,6 +1,6 @@
-package com.auth_application.services;
+package com.auth_application.auth.services;
 
-import com.auth_application.dtos.UserDto;
+import com.auth_application.auth.payload.UserDto;
 
 public interface UserService {
     //create user

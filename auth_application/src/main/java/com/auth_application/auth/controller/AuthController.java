@@ -1,9 +1,9 @@
-package com.auth_application.controller;
+package com.auth_application.auth.controller;
 
-import com.auth_application.dtos.RefreshTokenRequest;
-import com.auth_application.dtos.RefreshTokenResponse;
-import com.auth_application.dtos.UserDto;
-import com.auth_application.services.AuthService;
+import com.auth_application.auth.payload.RefreshTokenRequest;
+import com.auth_application.auth.payload.RefreshTokenResponse;
+import com.auth_application.auth.payload.UserDto;
+import com.auth_application.auth.services.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +25,7 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody UserDto userDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerUser(userDto));
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDto userDto, HttpServletResponse response) {
