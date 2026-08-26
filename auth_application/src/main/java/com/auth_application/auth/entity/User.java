@@ -75,7 +75,6 @@ public class User implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
     }
-
     @Override
     public String getUsername() {
         return this.email;
