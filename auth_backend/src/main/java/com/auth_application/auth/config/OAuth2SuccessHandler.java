@@ -135,20 +135,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         // add security header
         cookieService.addNoStoreHeaders(response);
 
-        // return json response
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("""
-                {
-                    "message": "login successful",
-                    "provider": "%s",
-                    "accessToken": "%s",
-                    "refreshToken": "%s"
-                }
-                """.formatted(provider.name(),accessToken, refreshTokenJwt
-                )
-        );
-        response.getWriter().flush();
+        // redirect to frontend oauth2 handler
+        response.sendRedirect("http://localhost:5173/oauth2/redirect?accessToken=" + accessToken);
     }
 }
